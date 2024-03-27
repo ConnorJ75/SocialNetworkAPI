@@ -20,6 +20,22 @@ const ThoughtController = {
         return res.status(500).json(err);
       }
     },
+    async getThoughtById(req,res) {
+      try {
+          const thought = await Thought.findOne({ _id: req.params.thoughtId })
+            .select('-__v');
+    
+          if (!user) {
+            return res.status(404).json({ message: 'No student with that ID' })
+          }
+    
+          res.json({user});
+      } 
+      catch (err) {
+          console.log(err);
+          return res.status(500).json(err);
+      }
+  },
 
 }
 
