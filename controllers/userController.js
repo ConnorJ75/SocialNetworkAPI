@@ -31,6 +31,17 @@ const UserController = {
             return res.status(500).json(err);
         }
     },
+    //updates user by id
+    updateUser(req, res) {
+        User.findOneAndUpdate(req.params.id, req.body, { new: true })
+          .then(user => {
+            if (!user) {
+              return res.status(404).json({ message: 'User not found' });
+            }
+            res.json(user);
+          })
+          .catch(err => res.status(500).json(err));
+    },
     async deleteUser(req, res) {
         User.findOneAndDelete(req.params.id)
           .then(user => {
@@ -39,6 +50,41 @@ const UserController = {
             }
             res.json({ message: 'User successfully deleted.' });
           }).catch(err =>res.status(500).json(err));
+      },
+      //adds a friend to the users friend array
+      addFriend(req, res) {
+        User.findOneAndUpdate(
+          { _id: req.params.userId },
+          { $addToSet: { friends: req.body.friendId || req.params.friendId} },
+          { new: true }
+        )
+          .then(user => {
+            if (!user) {
+              return res.status(404).json({ message: 'User not found' });
+            }
+            res.json(user);
+          })
+          .catch(err => res.status(500).json(err));
+      },
+      //removes a friend from the users friend list
+      removeFriend({ params }, res) {
+        User.findOneAndUpdate(
+          { _id: params.userId },
+          { $pull: { friends: params.friendId } },
+          { new: true }
+        )
+          .then((dbuser) => {
+            if (!dbuser) {
+              return res.status(404).json({ message: "No user with this id!" });
+            }
+            const removed = !dbuser.friends.includes(params.friendId);
+            if (removed) {
+              res.json({ message: "Friend removed successfully!", dbuser });
+            } else {
+              res.json(dbuser);
+            }
+          })
+          .catch((err) => res.status(400).json(err));
       },
 }
 module.exports = UserController;
